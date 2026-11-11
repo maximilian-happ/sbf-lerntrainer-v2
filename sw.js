@@ -1,0 +1,5 @@
+const CACHE='sbf-trainer-v2-offline-v1';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(ASSETS);await self.skipWaiting()})())});
+self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('sbf-trainer-v2-')&&k!==CACHE)await caches.delete(k);await self.clients.claim()})())});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==self.location.origin||!u.pathname.startsWith(new URL(self.registration.scope).pathname))return;e.respondWith((async()=>{const c=await caches.open(CACHE);const cached=await c.match(e.request,{ignoreSearch:true});if(cached)return cached;try{return await fetch(e.request)}catch(err){if(e.request.mode==='navigate'){const fallback=await c.match('./index.html');if(fallback)return fallback}return Response.error()}})())});
